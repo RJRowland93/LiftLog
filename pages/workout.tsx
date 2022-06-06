@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import type { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
+
+import prisma from "../lib/prisma";
 
 import Layout from "../components/Layout";
 import { ExerciseForm } from "../components/ExerciseForm";
@@ -18,15 +20,24 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
   }
 
   try {
-    const sets = await fetch(`http://localhost:3000/api/sets`, {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-      // body: JSON.stringify(body),
+    const { sets } = await prisma.user.findUnique({
+      where: {
+        email: session.user.email,
+        // TODO: get only sets for current day
+      },
+      select: {
+        sets: true,
+      },
     });
-    console.log("SETS: ", sets);
+
+    // TODO: how to serialize datetimes?
+    sets.forEach((set) => {
+      set.createdAt = set.createdAt.toISOString();
+      set.updatedAt = set.updatedAt.toISOString();
+    });
 
     return {
-      props: { sets },
+      props: { initialSets: sets },
     };
   } catch (e) {
     console.log(e);
@@ -34,29 +45,49 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
 };
 
 type Props = {
-  sets: {
-    exercise: string;
-    weight: number;
-    reps: number;
-  };
+  initialSets: [
+    {
+      updatedAt: string;
+      exercise: string;
+      weight: number;
+      reps: number;
+    }
+  ];
 };
 
-const Blog: React.FC<Props> = (props) => {
+export const Workout: React.FC<Props> = ({ initialSets }) => {
+  const [sets, addSet] = useState(initialSets);
+  const handleAddNewSet = (result) => {
+    const newSets = [...sets, result];
+    addSet(newSets);
+  };
+
   return (
     <Layout>
       <div className="page">
         <h1>Workout</h1>
         <main>
           {/* sets for today */}
-          {/* {props.sets.map((set, i) => (
-            <div key={`set-${i}`}>{set}</div>
-          ))} */}
+          <div>
+            <span>Time</span>
+            <span>Exercise</span>
+            <span>Weight</span>
+            <span>Reps</span>
+          </div>
+          {sets.map(({ updatedAt, exercise, weight, reps }, i) => (
+            <div key={`set-${i}`}>
+              <span>{updatedAt}</span>
+              <span>{exercise}</span>
+              <span>{weight}</span>
+              <span>{reps}</span>
+            </div>
+          ))}
           {/* time since last set */}
-          <ExerciseForm />
+          <ExerciseForm onAddNewSet={handleAddNewSet} />
         </main>
       </div>
     </Layout>
   );
 };
 
-export default Blog;
+export default Workout;

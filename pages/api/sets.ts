@@ -9,6 +9,7 @@ export default async function handle(
 ) {
   const session = await getSession({ req });
   if (!session) {
+    console.log("401: ", req);
     return res.status(401).send({ message: "Unauthorized" });
   }
 
@@ -19,20 +20,19 @@ export default async function handle(
   // return res.json({ message: `${req.method}`, dateStart, dateEnd, exercises });
 
   switch (req.method) {
-    case "GET":
-      const sets = await prisma.user.findUnique({
-        where: {
-          email: session.user.email,
-        },
-        select: {
-          sets: true,
+    case "POST":
+      const { exercise, weight, reps } = req.body;
+      const result = await prisma.set.create({
+        data: {
+          exercise,
+          weight,
+          reps,
+          user: { connect: { email: session.user.email } },
         },
       });
-      console.log("SETS: ", sets);
-
-      return res.json(sets);
-    case "POST":
+      return res.json(result);
     case "PUT":
+      return res.json({ message: `${req.method}` });
     case "DELETE":
       return res.json({ message: `${req.method}` });
     default:

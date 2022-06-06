@@ -8,11 +8,14 @@ import {
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 
-export const ExerciseForm: React.FC = () => {
+type Props = {
+  onAddNewSet: (any) => void;
+};
+
+export const ExerciseForm: React.FC = ({ onAddNewSet }) => {
   const form = useForm({
     initialValues: {
       exercise: "",
-      unit: "lbs",
       weight: 0,
       reps: 0,
     },
@@ -26,7 +29,6 @@ export const ExerciseForm: React.FC = () => {
   return (
     <form
       onSubmit={form.onSubmit(async (values) => {
-        console.log(values);
         try {
           const result = await fetch(`http://localhost:3000/api/sets`, {
             method: "POST",
@@ -34,7 +36,7 @@ export const ExerciseForm: React.FC = () => {
             body: JSON.stringify(values),
           });
           const data = await result.json();
-          console.error(data);
+          onAddNewSet(data);
           form.reset();
         } catch (error) {
           console.error(error);
@@ -54,14 +56,6 @@ export const ExerciseForm: React.FC = () => {
         placeholder="weight"
         // label="Weight"
         {...form.getInputProps("weight")}
-      />
-      <NativeSelect
-        required
-        data={["lbs", "kgs"]}
-        placeholder="unit"
-        // label="Select your favorite framework/library"
-        // description="This is anonymous"
-        {...form.getInputProps("unit")}
       />
       <NumberInput
         required
