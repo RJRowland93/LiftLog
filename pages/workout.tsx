@@ -6,7 +6,6 @@ import prisma from "../lib/prisma";
 
 import Layout from "../components/Layout";
 import { ExerciseForm } from "../components/ExerciseForm";
-import { clearInterval } from "timers";
 
 function getTimeDiff(datetime) {
   // TODO: fix diffing logic
@@ -86,16 +85,15 @@ export const Workout: React.FC<Props> = ({ initialSets }) => {
     initialSets[initialSets.length - 1]?.updatedAt
   );
 
+  const latest = sets[sets.length - 1]?.updatedAt;
   useEffect(() => {
-    const interval = setInterval(() => {
-      const diff = getTimeDiff(sets[sets.length - 1]?.updatedAt);
+    const intervalId = setInterval(() => {
+      const diff = getTimeDiff(latest);
       setTimesince(diff);
-    });
+    }, 1000);
 
-    return () => {
-      clearInterval(interval);
-    };
-  }, [sets]);
+    return () => clearInterval(intervalId);
+  }, [latest]);
 
   const handleAddNewSet = (result) => {
     const newSets = [...sets, result];
