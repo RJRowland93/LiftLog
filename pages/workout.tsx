@@ -6,6 +6,31 @@ import prisma from "../lib/prisma";
 
 import Layout from "../components/Layout";
 import { ExerciseForm } from "../components/ExerciseForm";
+import { clearInterval } from "timers";
+
+function getTimeDiff(datetime) {
+  // TODO: fix diffing logic
+  if (!datetime) {
+    return "none";
+  }
+
+  const date = new Date(datetime).getTime();
+  const now = new Date().getTime();
+  const milisec_diff = now - date;
+  const days = Math.floor(milisec_diff / 1000 / 60 / (60 * 24));
+  const date_diff = new Date(milisec_diff);
+
+  return (
+    days +
+    " Days " +
+    date_diff.getHours() +
+    " Hours " +
+    date_diff.getMinutes() +
+    " Minutes " +
+    date_diff.getSeconds() +
+    " Seconds"
+  );
+}
 
 export const getServerSideProps: GetServerSideProps = async ({ req }) => {
   const session = await getSession({ req });
@@ -57,6 +82,21 @@ type Props = {
 
 export const Workout: React.FC<Props> = ({ initialSets }) => {
   const [sets, addSet] = useState(initialSets);
+  const [timesince, setTimesince] = useState(
+    initialSets[initialSets.length - 1]?.updatedAt
+  );
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const diff = getTimeDiff(sets[sets.length - 1]?.updatedAt);
+      setTimesince(diff);
+    });
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [sets]);
+
   const handleAddNewSet = (result) => {
     const newSets = [...sets, result];
     addSet(newSets);
@@ -82,7 +122,10 @@ export const Workout: React.FC<Props> = ({ initialSets }) => {
               <span>{reps}</span>
             </div>
           ))}
+
           {/* time since last set */}
+          <div>{timesince}</div>
+
           <ExerciseForm onAddNewSet={handleAddNewSet} />
         </main>
       </div>
