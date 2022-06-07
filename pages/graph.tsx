@@ -1,6 +1,8 @@
 import React from "react";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
+import { LineChart } from "../components/LineChart";
+// import { BarChart } from "../components/BarChart";
 
 import Layout from "../components/Layout";
 
@@ -16,6 +18,7 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
       },
     };
   }
+
   return { props: {} };
 
   // const drafts = await prisma.post.findMany({
@@ -38,6 +41,10 @@ const Graphs: React.FC = () => {
   return (
     <Layout>
       <h1>Graphs</h1>
+      <div style={{ width: 400, height: 400 }}>
+        <LineChart />
+      </div>
+      {/* <BarChart /> */}
     </Layout>
   );
 };

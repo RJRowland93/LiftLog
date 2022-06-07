@@ -43,14 +43,16 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
     };
   }
 
+  // TODO: change this to midnight
+  const today = Date.now();
+
   try {
     const { sets } = await prisma.user.findUnique({
       where: {
         email: session.user.email,
-        // TODO: get only sets for current day
       },
       select: {
-        sets: true,
+        sets: { where: { createdAt: { gte: new Date(today) } } },
       },
     });
 

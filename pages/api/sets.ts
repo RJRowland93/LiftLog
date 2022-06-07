@@ -9,33 +9,57 @@ export default async function handle(
 ) {
   const session = await getSession({ req });
   if (!session) {
-    console.log("401: ", req);
     return res.status(401).send({ message: "Unauthorized" });
   }
 
-  const now = Date.now();
-  const { dateStart = now, dateEnd = now } = req.query;
-  // const exercises = req.query.exercises?.split(",");
-
-  // return res.json({ message: `${req.method}`, dateStart, dateEnd, exercises });
-
+  const { email } = session.user;
   switch (req.method) {
     case "POST":
-      const { exercise, weight, reps } = req.body;
-      const result = await prisma.set.create({
-        data: {
-          exercise,
-          weight,
-          reps,
-          user: { connect: { email: session.user.email } },
-        },
-      });
-      return res.json(result);
+      const postResult = await handlePost(req, email);
+      return res.json(postResult);
     case "PUT":
-      return res.json({ message: `${req.method}` });
+      const putResult = await handlePut(req, email);
+      return res.json(putResult);
+
     case "DELETE":
-      return res.json({ message: `${req.method}` });
+      const deleteResult = await handleDelete(req, email);
+      return res.json(deleteResult);
+
     default:
       return res.status(400).send({ message: `Unsupported: ${req.method}` });
   }
+}
+
+async function handlePost(req, email) {
+  const { exercise, weight, reps } = req.body;
+  const result = await prisma.set.create({
+    data: {
+      exercise,
+      weight,
+      reps,
+      user: { connect: { email: email } },
+    },
+  });
+  return result;
+}
+
+async function handlePut(req, email) {
+  // TODO: only update if session user id and set id match
+  const { setId, exercise, weight, reps } = req.query;
+  const result = await prisma.set.update({
+    where: { id: setId },
+    data: { exercise, weight, reps },
+  });
+
+  return result;
+}
+
+async function handleDelete(req, email) {
+  const { setId } = req.query;
+  // TODO: only delete if session user id and set id match
+  const result = await prisma.set.delete({
+    where: { id: setId },
+  });
+
+  return result;
 }
