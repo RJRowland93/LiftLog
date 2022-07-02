@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { getSession } from "next-auth/react";
 import prisma from "../../lib/prisma";
-import { formatDate, getToday } from "../../lib/dayjs";
+import { formatDate, getToday, getTomorrow } from "../../lib/dayjs";
 
 // GET /api/sets?exercises=<exercise,...>&dateStart=<date>&dateEnd=<date>
 export default async function handle(
@@ -67,9 +67,9 @@ async function handleDelete(req, email) {
 
 export async function querySetsForDateRange(
   email,
-  dateStart = getToday(),
-  dateEnd
+  range = [getToday(), getTomorrow()]
 ) {
+  const [dateStart, dateEnd] = range;
   const { sets } = await prisma.user.findUnique({
     where: {
       email: email,

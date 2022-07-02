@@ -1,76 +1,81 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { GetServerSideProps } from "next";
-import { getSession } from "next-auth/react";
 import { Indicator } from "@mantine/core";
 import { Calendar } from "@mantine/dates";
 
-import prisma from "../lib/prisma";
-import dayjs, { getStartOfMonth } from "../lib/dayjs";
+import dayjs, { getStartOfMonth, getStartOfNextMonth } from "../lib/dayjs";
+import { authProtected } from "../services/auth";
 
 import Layout from "../components/Layout";
 import { ExerciseTable } from "../components/ExerciseTable";
+import { querySetsForDateRange } from "./api/sets";
 
-export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
-  const session = await getSession({ req });
-  if (!session) {
-    return {
-      redirect: {
-        destination: "/api/auth/signin",
-        status: 403,
-        permanent: false,
-      },
-    };
-  }
+export const getServerSideProps: GetServerSideProps = async ({ req }) => {
+  return authProtected(req, async (session) => {
+    const startOfMOnth = getStartOfMonth();
+    const nextMonth = getStartOfNextMonth();
 
-  const startOfMOnth = getStartOfMonth();
+    try {
+      const sets = await querySetsForDateRange(session.user.email, [
+        startOfMOnth,
+        nextMonth,
+      ]);
 
-  try {
-    const { sets } = await prisma.user.findUnique({
-      where: {
-        email: session.user.email,
-      },
-      select: {
-        sets: { where: { createdAt: { gte: startOfMOnth } } },
-      },
-    });
+      const { dateSets, uniqueDates } = sets.reduce(
+        (acc, set) => {
+          const date = dayjs(set.createdAt).get("date");
+          acc.uniqueDates.push(date);
 
-    const formattedDates = sets.map(({ createdAt }) =>
-      dayjs(createdAt.toISOString()).date()
-    );
+          if (acc.dateSets[date]) {
+            acc.dateSets[date].push(set);
+          } else {
+            acc.dateSets[date] = [set];
+          }
 
-    const initialDates = [...new Set(formattedDates)];
+          return acc;
+        },
+        { dateSets: {}, uniqueDates: [] }
+      );
 
-    return {
-      props: { initialDates },
-    };
-  } catch (e) {
-    console.log(e);
-  }
+      const formattedDates = sets.map(({ createdAt }) =>
+        dayjs(createdAt).get("date")
+      );
+
+      const initialDates = [...new Set(uniqueDates)];
+
+      return {
+        props: { sets: dateSets, initialDates },
+      };
+    } catch (e) {
+      console.log(e);
+    }
+  });
 };
 
-const WorkoutCalendar: React.FC = ({ initialDates }) => {
-  const [currentDate, setCurrentDate] = useState(null);
+const WorkoutCalendar: React.FC = ({ sets, initialDates }) => {
+  const [selectedDate, setSelectedDate] = useState(
+    sets[initialDates[initialDates.length - 1]]?.createdAt
+  );
   const [month, onMonthChange] = useState(new Date());
 
   const workoutDates = new Set(initialDates);
 
   const handleChange = (date) => {
-    setCurrentDate(date);
+    setSelectedDate(date);
   };
+
+  const selectedSets = sets[dayjs(selectedDate).get("date")];
 
   return (
     <Layout>
       <h1>Calendar</h1>
-      <div>{JSON.stringify(currentDate)}</div>
-      {/* <div>{currentDate}</div> */}
-      {/* <div>{month}</div> */}
       <Calendar
         month={month}
         onMonthChange={onMonthChange}
-        value={currentDate}
+        value={selectedDate}
         onChange={handleChange}
         renderDay={(date) => {
-          const day = date.getDate();
+          const day = dayjs(date).get("date");
           const isDisabled = !workoutDates.has(day);
           return (
             <Indicator size={6} color="red" offset={8} disabled={isDisabled}>
@@ -79,7 +84,7 @@ const WorkoutCalendar: React.FC = ({ initialDates }) => {
           );
         }}
       />
-      {currentDate && <ExerciseTable data={[]} />}
+      {selectedSets && <ExerciseTable data={selectedSets} />}
     </Layout>
   );
 };
