@@ -51,11 +51,23 @@ const options = {
     //   from: process.env.SMTP_FROM,
     // }),
   ],
+  callbacks: {
+    session: async ({ session, token }) => {
+      if (session?.user) {
+        session.user.id = token.uid;
+      }
+      return session;
+    },
+    jwt: async ({ user, token }) => {
+      if (user) {
+        token.uid = user.id;
+      }
+      return token;
+    },
+  },
+  session: {
+    strategy: "jwt",
+  },
   adapter: PrismaAdapter(prisma),
   secret: process.env.SECRET,
-  // session: {
-  //   jwt: true,
-  //   // Seconds - How long until an idle session expires and is no longer valid.
-  //   maxAge: 30 * 24 * 60 * 60, // 30 days
-  // },
 };

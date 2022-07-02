@@ -3,14 +3,12 @@ import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import { Indicator } from "@mantine/core";
 import { Calendar } from "@mantine/dates";
-import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
 
 import prisma from "../lib/prisma";
+import dayjs, { getStartOfMonth } from "../lib/dayjs";
 
 import Layout from "../components/Layout";
-
-dayjs.extend(relativeTime);
+import { ExerciseTable } from "../components/ExerciseTable";
 
 export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
   const session = await getSession({ req });
@@ -24,8 +22,7 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
     };
   }
 
-  // TODO: change this to midnight
-  const startOfMOnth = dayjs().startOf("month").toISOString();
+  const startOfMOnth = getStartOfMonth();
 
   try {
     const { sets } = await prisma.user.findUnique({
@@ -37,45 +34,52 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
       },
     });
 
-    // TODO: how to serialize datetimes?
-    sets.forEach((set) => {
-      set.createdAt = set.createdAt.toISOString();
-      set.updatedAt = set.updatedAt.toISOString();
-    });
+    const formattedDates = sets.map(({ createdAt }) =>
+      dayjs(createdAt.toISOString()).date()
+    );
 
-    console.log(sets);
+    const initialDates = [...new Set(formattedDates)];
+
     return {
-      props: { initialSets: sets },
+      props: { initialDates },
     };
   } catch (e) {
     console.log(e);
   }
 };
 
-const WorkoutCalendar: React.FC = ({ initialSets }) => {
-  const [value, setValue] = useState(null);
+const WorkoutCalendar: React.FC = ({ initialDates }) => {
+  const [currentDate, setCurrentDate] = useState(null);
   const [month, onMonthChange] = useState(new Date());
+
+  const workoutDates = new Set(initialDates);
+
+  const handleChange = (date) => {
+    setCurrentDate(date);
+  };
 
   return (
     <Layout>
       <h1>Calendar</h1>
-      {initialSets?.map(({ createdAt, exercise }) => (
-        <div>{`${createdAt} ${exercise}`}</div>
-      ))}
+      <div>{JSON.stringify(currentDate)}</div>
+      {/* <div>{currentDate}</div> */}
+      {/* <div>{month}</div> */}
       <Calendar
         month={month}
         onMonthChange={onMonthChange}
-        value={value}
-        onChange={setValue}
+        value={currentDate}
+        onChange={handleChange}
         renderDay={(date) => {
           const day = date.getDate();
+          const isDisabled = !workoutDates.has(day);
           return (
-            <Indicator size={6} color="red" offset={8} disabled={day !== 16}>
+            <Indicator size={6} color="red" offset={8} disabled={isDisabled}>
               <div>{day}</div>
             </Indicator>
           );
         }}
       />
+      {currentDate && <ExerciseTable data={[]} />}
     </Layout>
   );
 };

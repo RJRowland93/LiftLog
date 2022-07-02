@@ -1,18 +1,13 @@
 import React from "react";
-import {
-  Autocomplete,
-  NumberInput,
-  NativeSelect,
-  Button,
-  Group,
-} from "@mantine/core";
+import { Grid, Autocomplete, NumberInput, Button, Group } from "@mantine/core";
 import { useForm } from "@mantine/form";
+import { fetchSetCreate } from "../services/sets";
 
 type Props = {
-  onAddNewSet: (any) => void;
+  onSetCreate: (any) => void;
 };
 
-export const ExerciseForm: React.FC = ({ onAddNewSet }) => {
+export const ExerciseForm: React.FC<Props> = ({ onSetCreate }) => {
   const form = useForm({
     initialValues: {
       exercise: "",
@@ -30,43 +25,48 @@ export const ExerciseForm: React.FC = ({ onAddNewSet }) => {
     <form
       onSubmit={form.onSubmit(async (values) => {
         try {
-          const result = await fetch(`http://localhost:3000/api/sets`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(values),
-          });
-          const data = await result.json();
-          onAddNewSet(data);
+          const data = await fetchSetCreate(values);
+
+          onSetCreate(data);
           form.reset();
         } catch (error) {
           console.error(error);
         }
       })}
     >
-      <Autocomplete
-        required
-        // label=""
-        placeholder="Exercise"
-        data={["Bench", "OHP", "Squat", "Deadlift"]}
-        {...form.getInputProps("exercise")}
-      />
+      <Grid grow gutter="md">
+        <Grid.Col md={3}>
+          <Autocomplete
+            required
+            // label=""
+            placeholder="Exercise"
+            data={["Bench", "OHP", "Squat", "Deadlift"]}
+            {...form.getInputProps("exercise")}
+          />
+        </Grid.Col>
 
-      <NumberInput
-        required
-        placeholder="weight"
-        // label="Weight"
-        {...form.getInputProps("weight")}
-      />
-      <NumberInput
-        required
-        placeholder="reps"
-        // label="Reps"
-        {...form.getInputProps("reps")}
-      />
+        <Grid.Col md={3}>
+          <NumberInput
+            required
+            placeholder="weight"
+            // label="Weight"
+            {...form.getInputProps("weight")}
+          />
+        </Grid.Col>
 
-      <Group position="right" mt="md">
-        <Button type="submit">Submit</Button>
-      </Group>
+        <Grid.Col md={3}>
+          <NumberInput
+            required
+            placeholder="reps"
+            // label="Reps"
+            {...form.getInputProps("reps")}
+          />
+        </Grid.Col>
+
+        <Grid.Col md={3}>
+          <Button type="submit">Submit</Button>
+        </Grid.Col>
+      </Grid>
     </form>
   );
 };

@@ -98,7 +98,7 @@ const useStyles = createStyles((theme, _params, getRef) => {
 });
 
 const data = [
-  { link: "/workout", label: "Workout", icon: "" },
+  { link: "/", label: "Workout", icon: "" },
   { link: "/graph", label: "Graph", icon: "" },
   { link: "/calendar", label: "Calendar", icon: "" },
 ];

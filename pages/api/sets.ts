@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { getSession } from "next-auth/react";
 import prisma from "../../lib/prisma";
+import { formatDate, getToday } from "../../lib/dayjs";
 
 // GET /api/sets?exercises=<exercise,...>&dateStart=<date>&dateEnd=<date>
 export default async function handle(
@@ -45,7 +46,7 @@ async function handlePost(req, email) {
 
 async function handlePut(req, email) {
   // TODO: only update if session user id and set id match
-  const { setId, exercise, weight, reps } = req.query;
+  const { setId, exercise, weight, reps } = req.body;
   const result = await prisma.set.update({
     where: { id: setId },
     data: { exercise, weight, reps },
@@ -55,11 +56,35 @@ async function handlePut(req, email) {
 }
 
 async function handleDelete(req, email) {
-  const { setId } = req.query;
+  const { setId } = req.body;
   // TODO: only delete if session user id and set id match
   const result = await prisma.set.delete({
     where: { id: setId },
   });
 
   return result;
+}
+
+export async function querySetsForDateRange(
+  email,
+  dateStart = getToday(),
+  dateEnd
+) {
+  const { sets } = await prisma.user.findUnique({
+    where: {
+      email: email,
+    },
+    select: {
+      sets: { where: { createdAt: { gte: dateStart, lt: dateEnd } } },
+    },
+  });
+
+  // TODO: how to serialize datetimes?
+  sets.forEach((set) => {
+    const d = formatDate(set.createdAt);
+    set.createdAt = d;
+    set.updatedAt = null;
+  });
+
+  return sets;
 }
