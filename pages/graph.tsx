@@ -1,40 +1,31 @@
 import React from "react";
 import { GetServerSideProps } from "next";
-import { getSession } from "next-auth/react";
+
+import { querySetsBetweenDateRange } from "../lib/prisma";
+import { authProtected } from "../lib/next-auth";
+import { getYearAgo } from "../lib/dayjs";
+
 import { LineChart } from "../components/LineChart";
 // import { BarChart } from "../components/BarChart";
-
 import Layout from "../components/Layout";
 
+import { getChartData } from "../utils/calculations";
+
 export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
-  const session = await getSession({ req });
+  return authProtected(req, async (session) => {
+    try {
+      const yearAgo = getYearAgo();
 
-  if (!session) {
-    return {
-      redirect: {
-        destination: "/api/auth/signin",
-        status: 403,
-        permanent: false,
-      },
-    };
-  }
+      const result = await querySetsBetweenDateRange(session.user.email, {
+        dateStart: yearAgo,
+      });
 
-  return { props: {} };
-
-  // const drafts = await prisma.post.findMany({
-  //   where: {
-  //     author: { email: session.user.email },
-  //     published: false,
-  //   },
-  //   include: {
-  //     author: {
-  //       select: { name: true },
-  //     },
-  //   },
-  // });
-  // return {
-  //   props: { drafts },
-  // };
+      const data = getChartData(result);
+      return { props: data };
+    } catch (e) {
+      console.log(e);
+    }
+  });
 };
 
 const Graphs: React.FC = () => {

@@ -22,6 +22,9 @@ export const getStartOfMonth = () =>
 export const getStartOfNextMonth = () =>
   dayjs().startOf("month").add(1, "month").format("YYYY-MM-DDTHH:mm:ssZ");
 
+export const getYearAgo = () =>
+  dayjs().startOf("day").subtract(1, "year").format("YYYY-MM-DDTHH:mm:ssZ");
+
 export const getTimeToNow = (date) => dayjs(date).toNow();
 
 export default dayjs;

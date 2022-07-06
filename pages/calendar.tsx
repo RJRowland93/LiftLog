@@ -3,12 +3,12 @@ import { GetServerSideProps } from "next";
 import { Indicator } from "@mantine/core";
 import { Calendar } from "@mantine/dates";
 
+import { querySetsBetweenDateRange } from "../lib/prisma";
 import dayjs, { getStartOfMonth, getStartOfNextMonth } from "../lib/dayjs";
-import { authProtected } from "../services/utils/auth";
+import { authProtected } from "../lib/next-auth";
 
 import Layout from "../components/Layout";
 import { ExerciseTable } from "../components/ExerciseTable";
-import { querySetsBetweenDateRange } from "./api/sets";
 
 export const getServerSideProps: GetServerSideProps = async ({ req }) => {
   return authProtected(req, async (session) => {
@@ -16,10 +16,10 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
     const nextMonth = getStartOfNextMonth();
 
     try {
-      const sets = await querySetsBetweenDateRange(session.user.email, [
-        startOfMOnth,
-        nextMonth,
-      ]);
+      const sets = await querySetsBetweenDateRange(session.user.email, {
+        dateStart: startOfMOnth,
+        dateEnd: nextMonth,
+      });
 
       const { dateSets, uniqueDates } = sets.reduce(
         (acc, set) => {

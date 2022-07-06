@@ -1,4 +1,4 @@
-import dayjs from "../../lib/dayjs";
+// import dayjs from "../lib/dayjs";
 
 import { REPS_TO_1RM_PERC, STRENGTH_STANDARDS } from "./constants";
 
@@ -6,22 +6,22 @@ export function getExercises(workouts) {
   return [...new Set(workouts.map(({ exercise }) => exercise))];
 }
 
-export function getDates(workouts) {
-  const first = dayjs(workouts[0].date, "YYYY-MM-DD");
-  console.log("first: ", first);
-  const today = dayjs();
-  const duration = Math.ceil(dayjs.duration(today.diff(first)).asDays());
-  const dates = [];
-  for (let i = 0; i < duration; i++) {
-    const what = first.add(i, "day").format("YYYY-MM-DD");
-    console.log(`what ${i}: `, what);
-    dates.push(what);
-  }
-  console.log("dates: ", dates);
+// export function getDates(workouts) {
+//   const first = dayjs(workouts[0].date, "YYYY-MM-DD");
+//   console.log("first: ", first);
+//   const today = dayjs();
+//   const duration = Math.ceil(dayjs.duration(today.diff(first)).asDays());
+//   const dates = [];
+//   for (let i = 0; i < duration; i++) {
+//     const what = first.add(i, "day").format("YYYY-MM-DD");
+//     console.log(`what ${i}: `, what);
+//     dates.push(what);
+//   }
+//   console.log("dates: ", dates);
 
-  return [...new Set(dates)];
-  // return [...new Set(workouts.map(({ date }) => date))];
-}
+//   return [...new Set(dates)];
+//   // return [...new Set(workouts.map(({ date }) => date))];
+// }
 
 export function groupBy(prop, list) {
   return list.reduce((acc, cur) => {
@@ -135,13 +135,14 @@ export function mapChartData(label) {
 }
 
 export function getChartData(
-  rawWorkouts,
-  tartgetExercises = ["squat", "deadlift", "bench", "ohp", "incline_bench"]
+  workouts
+  // rawWorkouts,
+  // tartgetExercises = ["squat", "deadlift", "bench", "ohp", "incline_bench"]
 ) {
-  const tartgetExercisesSet = new Set(tartgetExercises);
-  const workouts = rawWorkouts.filter((workout) =>
-    tartgetExercisesSet.has(workout.exercise)
-  );
+  // const tartgetExercisesSet = new Set(tartgetExercises);
+  // const workouts = rawWorkouts.filter((workout) =>
+  //   tartgetExercisesSet.has(workout.exercise)
+  // );
   const grouped = groupWorkouts(workouts);
 
   const repMaxCalc = mapDataSet(calcMaxRep, grouped);

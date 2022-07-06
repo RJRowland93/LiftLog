@@ -1,7 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { getSession } from "next-auth/react";
-import prisma from "../../lib/prisma";
-import { formatDate, getToday, getTomorrow } from "../../lib/dayjs";
+import prisma, { querySetsBetweenDateRange } from "../../../lib/prisma";
 
 // GET /api/sets?exercises=<exercise,...>&dateStart=<date>&dateEnd=<date>
 export default async function handle(
@@ -34,51 +33,13 @@ export default async function handle(
   }
 }
 
-export async function querySetsBetweenDateRange(email, range, exercises) {
-  const [dateStart = getToday(), dateEnd = getTomorrow()] = range;
-  console.log(dateStart, dateEnd);
-  const { sets } = await prisma.user.findUnique({
-    where: {
-      email: email,
-    },
-    select: {
-      sets: {
-        where: {
-          createdAt: { gte: dateStart, lte: dateEnd },
-          ...(exercises && {
-            exercise: {
-              in: Array.isArray(exercises) ? exercises : [exercises],
-            },
-          }),
-        },
-        select: {
-          id: true,
-          exercise: true,
-          weight: true,
-          reps: true,
-          createdAt: true,
-        },
-      },
-    },
-  });
-
-  // TODO: how to serialize datetimes?
-  sets.forEach((set) => {
-    const d = formatDate(set.createdAt);
-    set.createdAt = d;
-    // set.updatedAt = null;
-  });
-
-  return sets;
-}
-
 async function handleGet(req, email) {
-  const { dateStart, dateEnd, exercise } = req.query;
-  const result = await querySetsBetweenDateRange(
-    email,
-    [dateStart, dateEnd],
-    exercise
-  );
+  const { dateStart, dateEnd, exercises } = req.query;
+  const result = await querySetsBetweenDateRange(email, {
+    dateStart,
+    dateEnd,
+    exercises,
+  });
   return result;
 }
 

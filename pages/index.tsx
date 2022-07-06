@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import type { GetServerSideProps } from "next";
 
-import { querySetsBetweenDateRange } from "./api/sets";
+import { querySetsBetweenDateRange } from "../lib/prisma";
 import { getTimeToNow } from "../lib/dayjs";
-import { authProtected } from "../services/utils/auth";
+import { authProtected } from "../lib/next-auth";
 
 import Layout from "../components/Layout";
 import { ExerciseForm } from "../components/ExerciseForm";
@@ -12,7 +12,7 @@ import { ExerciseTable } from "../components/ExerciseTable";
 export const getServerSideProps: GetServerSideProps = async ({ req }) => {
   return authProtected(req, async (session) => {
     try {
-      const sets = await querySetsBetweenDateRange(session.user.email, []);
+      const sets = await querySetsBetweenDateRange(session.user.email);
 
       return {
         props: { initialSets: sets },
