@@ -11,7 +11,7 @@ import { Check, Edit, EditOff, Trash } from "tabler-icons-react";
 import { useForm } from "@mantine/form";
 
 import { formatTime } from "../lib/dayjs";
-import { fetchSetDelete, fetchSetUpdate } from "../services/sets";
+import { fetchSetDelete, fetchSetUpdate } from "../services/setsService";
 
 function getKeys(id) {
   return ["exercise", "weight", "reps"].map((x) => `${x}-${id}`);

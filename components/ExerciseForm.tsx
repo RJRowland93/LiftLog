@@ -1,7 +1,7 @@
 import React from "react";
-import { Grid, Autocomplete, NumberInput, Button, Group } from "@mantine/core";
+import { Grid, Autocomplete, NumberInput, Button } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { fetchSetCreate } from "../services/sets";
+import { fetchSetCreate } from "../services/setsService";
 
 type Props = {
   onSetCreate: (any) => void;

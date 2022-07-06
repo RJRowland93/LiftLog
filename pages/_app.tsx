@@ -1,3 +1,4 @@
+import React from "react";
 import { SessionProvider } from "next-auth/react";
 import { AppProps } from "next/app";
 import { MantineThemeOverride, MantineProvider } from "@mantine/core";

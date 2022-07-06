@@ -15,6 +15,9 @@ export default async function handle(
 
   const { email } = session.user;
   switch (req.method) {
+    case "GET":
+      const gettResult = await handleGet(req, email);
+      return res.json(gettResult);
     case "POST":
       const postResult = await handlePost(req, email);
       return res.json(postResult);
@@ -29,6 +32,54 @@ export default async function handle(
     default:
       return res.status(400).send({ message: `Unsupported: ${req.method}` });
   }
+}
+
+export async function querySetsBetweenDateRange(email, range, exercises) {
+  const [dateStart = getToday(), dateEnd = getTomorrow()] = range;
+  console.log(dateStart, dateEnd);
+  const { sets } = await prisma.user.findUnique({
+    where: {
+      email: email,
+    },
+    select: {
+      sets: {
+        where: {
+          createdAt: { gte: dateStart, lte: dateEnd },
+          ...(exercises && {
+            exercise: {
+              in: Array.isArray(exercises) ? exercises : [exercises],
+            },
+          }),
+        },
+        select: {
+          id: true,
+          exercise: true,
+          weight: true,
+          reps: true,
+          createdAt: true,
+        },
+      },
+    },
+  });
+
+  // TODO: how to serialize datetimes?
+  sets.forEach((set) => {
+    const d = formatDate(set.createdAt);
+    set.createdAt = d;
+    // set.updatedAt = null;
+  });
+
+  return sets;
+}
+
+async function handleGet(req, email) {
+  const { dateStart, dateEnd, exercise } = req.query;
+  const result = await querySetsBetweenDateRange(
+    email,
+    [dateStart, dateEnd],
+    exercise
+  );
+  return result;
 }
 
 async function handlePost(req, email) {
@@ -63,28 +114,4 @@ async function handleDelete(req, email) {
   });
 
   return result;
-}
-
-export async function querySetsForDateRange(
-  email,
-  range = [getToday(), getTomorrow()]
-) {
-  const [dateStart, dateEnd] = range;
-  const { sets } = await prisma.user.findUnique({
-    where: {
-      email: email,
-    },
-    select: {
-      sets: { where: { createdAt: { gte: dateStart, lt: dateEnd } } },
-    },
-  });
-
-  // TODO: how to serialize datetimes?
-  sets.forEach((set) => {
-    const d = formatDate(set.createdAt);
-    set.createdAt = d;
-    set.updatedAt = null;
-  });
-
-  return sets;
 }

@@ -1,9 +1,9 @@
-import React,  from "react";
+import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { signOut, useSession } from "next-auth/react";
 
-import { createStyles, Navbar,  } from "@mantine/core";
+import { createStyles, Navbar } from "@mantine/core";
 // import {
 //   BellRinging,
 //   Fingerprint,

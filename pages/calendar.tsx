@@ -4,11 +4,11 @@ import { Indicator } from "@mantine/core";
 import { Calendar } from "@mantine/dates";
 
 import dayjs, { getStartOfMonth, getStartOfNextMonth } from "../lib/dayjs";
-import { authProtected } from "../services/auth";
+import { authProtected } from "../services/utils/auth";
 
 import Layout from "../components/Layout";
 import { ExerciseTable } from "../components/ExerciseTable";
-import { querySetsForDateRange } from "./api/sets";
+import { querySetsBetweenDateRange } from "./api/sets";
 
 export const getServerSideProps: GetServerSideProps = async ({ req }) => {
   return authProtected(req, async (session) => {
@@ -16,7 +16,7 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
     const nextMonth = getStartOfNextMonth();
 
     try {
-      const sets = await querySetsForDateRange(session.user.email, [
+      const sets = await querySetsBetweenDateRange(session.user.email, [
         startOfMOnth,
         nextMonth,
       ]);
@@ -52,7 +52,7 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
   });
 };
 
-const WorkoutCalendar: React.FC = ({ sets, initialDates }) => {
+const WorkoutCalendar: React.FC = ({ sets = [], initialDates = [] }) => {
   const [selectedDate, setSelectedDate] = useState(
     sets[initialDates[initialDates.length - 1]]?.createdAt
   );

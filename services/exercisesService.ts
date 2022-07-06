@@ -1,4 +1,4 @@
-const HOST_URL = "http://localhost:3000";
+import { HOST_URL } from "./utils/constants";
 
 export async function fetchSetCreate({ exercise, weight, reps }) {
   const result = await fetch(`${HOST_URL}/api/sets`, {
