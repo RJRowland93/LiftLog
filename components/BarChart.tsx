@@ -3,17 +3,17 @@ import { AxisOptions, Chart } from "react-charts";
 
 import useDemoConfig from "./useDemoConfig";
 
-export function BarChart() {
-  const { data, randomizeData } = useDemoConfig({
-    series: 3,
-    dataType: "ordinal",
-  });
+export function BarChart({ data }) {
+  // const { data, randomizeData } = useDemoConfig({
+  //   series: 3,
+  //   dataType: "ordinal",
+  // });
 
   const primaryAxis = React.useMemo<
     AxisOptions<typeof data[number]["data"][number]>
   >(
     () => ({
-      getValue: (datum) => datum.primary,
+      getValue: (datum) => datum.x,
     }),
     []
   );
@@ -23,24 +23,19 @@ export function BarChart() {
   >(
     () => [
       {
-        getValue: (datum) => datum.secondary,
+        getValue: (datum) => datum.y,
       },
     ],
     []
   );
 
   return (
-    <>
-      <button onClick={randomizeData}>Randomize Data</button>
-      <br />
-      <br />
-      <Chart
-        options={{
-          data,
-          primaryAxis,
-          secondaryAxes,
-        }}
-      />
-    </>
+    <Chart
+      options={{
+        data,
+        primaryAxis,
+        secondaryAxes,
+      }}
+    />
   );
 }

@@ -26,12 +26,12 @@ export default async function handle(
 }
 
 async function handleGet(req, email) {
-  const { dateStart, dateEnd, exercise } = req.query;
-  const result = await querySetsBetweenDateRange(
-    email,
-    [dateStart, dateEnd],
-    exercise
-  );
+  const { dateStart, dateEnd, exercises } = req.query;
+  const result = await querySetsBetweenDateRange(email, {
+    dateStart,
+    dateEnd,
+    exercises,
+  });
 
   const data = getChartData(result);
 

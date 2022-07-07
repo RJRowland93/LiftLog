@@ -36,7 +36,8 @@ export function groupBy(prop, list) {
 export function groupWorkouts(workouts) {
   const groupedExercises = groupBy("exercise", workouts);
   for (const exercise in groupedExercises) {
-    const groupedDates = groupBy("date", groupedExercises[exercise]);
+    // const groupedDates = groupBy("date", groupedExercises[exercise]);
+    const groupedDates = groupBy("createdAt", groupedExercises[exercise]);
     groupedExercises[exercise] = Object.entries(groupedDates);
   }
   return Object.entries(groupedExercises);
@@ -121,15 +122,15 @@ export function getExerciseChartColor(exercise) {
 
 export function mapChartData(label) {
   return function ([exercise, calculations]) {
-    const { borderColor, backgroundColor } = getExerciseChartColor(exercise);
+    // const { borderColor, backgroundColor } = getExerciseChartColor(exercise);
     return {
       label: `${exercise}_${label}`,
       data: calculations.map(([date, result]) => ({
         x: date,
         y: result,
       })),
-      borderColor,
-      backgroundColor,
+      // borderColor,
+      // backgroundColor,
     };
   };
 }

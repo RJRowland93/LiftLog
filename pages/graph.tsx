@@ -3,11 +3,11 @@ import { GetServerSideProps } from "next";
 
 import { querySetsBetweenDateRange } from "../lib/prisma";
 import { authProtected } from "../lib/next-auth";
-import { getYearAgo } from "../lib/dayjs";
+import { formatDate, getYearAgo } from "../lib/dayjs";
 
-import { LineChart } from "../components/LineChart";
-// import { BarChart } from "../components/BarChart";
 import Layout from "../components/Layout";
+import { LineChart } from "../components/LineChart";
+import { BarChart } from "../components/BarChart";
 
 import { getChartData } from "../utils/calculations";
 
@@ -20,7 +20,9 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
         dateStart: yearAgo,
       });
 
+      result.forEach((set) => (set.createdAt = formatDate(set.createdAt)));
       const data = getChartData(result);
+
       return { props: data };
     } catch (e) {
       console.log(e);
@@ -28,14 +30,14 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
   });
 };
 
-const Graphs: React.FC = () => {
+const Graphs: React.FC = ({ repMax, volume }) => {
   return (
     <Layout>
       <h1>Graphs</h1>
       <div style={{ width: 400, height: 400 }}>
-        <LineChart />
+        <LineChart data={repMax} />
       </div>
-      {/* <BarChart /> */}
+      <BarChart data={volume} />
     </Layout>
   );
 };

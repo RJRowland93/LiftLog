@@ -5,7 +5,9 @@ import utc from "dayjs/plugin/utc";
 dayjs.extend(relativeTime);
 dayjs.extend(utc);
 
-export const formatDate = (date) =>
+export const formatDate = (date) => dayjs.utc(date).format("YYYY-MM-DDT");
+
+export const formatDateTime = (date) =>
   dayjs.utc(date).format("YYYY-MM-DDTHH:mm:ss");
 
 export const formatTime = (date) => dayjs.utc(date).format("HH:mm:ss");

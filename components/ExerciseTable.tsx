@@ -12,6 +12,7 @@ import { useForm } from "@mantine/form";
 
 import { formatTime } from "../lib/dayjs";
 import { fetchSetDelete, fetchSetUpdate } from "../services/setsService";
+import { getMaxRep } from "../utils/calculations";
 
 function getKeys(id) {
   return ["exercise", "weight", "reps"].map((x) => `${x}-${id}`);
@@ -127,6 +128,7 @@ const EditableSet: React.FC<EditableSet> = ({
               {...form.getInputProps(rk)}
             />
           </td>
+          <td>{getMaxRep(values[rk], values[wk])}</td>
           <td>
             <ActionIcon onClick={() => setEditing(false)}>
               <EditOff />
@@ -141,6 +143,7 @@ const EditableSet: React.FC<EditableSet> = ({
           <td>{exercise}</td>
           <td>{weight}</td>
           <td>{reps}</td>
+          <td>{getMaxRep(reps, weight)}</td>
           <td>
             <ActionIcon onClick={() => setEditing(true)}>
               <Edit />
@@ -225,7 +228,7 @@ export const ExerciseTable: React.FC<TableProps> = ({
               <th>Exercise</th>
               <th>Weight</th>
               <th>Reps</th>
-              <th></th>
+              <th>1 RM</th>
             </tr>
           </thead>
           <tbody>{rows}</tbody>
